@@ -10,13 +10,14 @@ import (
 	"sync"
 )
 
+var mu = &sync.Mutex{}
+
 type Reconfigurable interface {
 	Executable
 	GetData() (BaseReconfigure, ServiceReconfigure)
 }
 
 type Reconfigure struct {
-	mu 					sync.Mutex
 	BaseReconfigure
 	ServiceReconfigure
 }
@@ -49,8 +50,8 @@ var NewReconfigure = func(baseData BaseReconfigure, serviceData ServiceReconfigu
 }
 
 func (m *Reconfigure) Execute(args []string) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	mu.Lock()
+	defer mu.Unlock()
 	if err := m.createConfig(); err != nil {
 		return err
 	}
