@@ -45,7 +45,7 @@ export DOCKER_HUB_USER=[...] # Change to your user in hub.docker.com
 
 docker-compose -f docker-compose-test.yml run --rm unit
 
-docker build -t $DOCKER_HUB_USER/docker-flow-proxy .
+docker image build -t $DOCKER_HUB_USER/docker-flow-proxy .
 ```
 
 ### The Complete Cycle (Unit, Build, Staging)
