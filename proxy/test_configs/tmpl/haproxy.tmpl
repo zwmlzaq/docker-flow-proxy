@@ -43,5 +43,4 @@ defaults
     stats uri /admin?stats
 {{.UserList}}
 frontend services{{.DefaultBinds}}
-    mode http
-{{.ExtraFrontend}}{{.ContentFrontend}}{{.ContentFrontendTcp}}{{.ContentFrontendSNI}}
+    mode http{{.ExtraFrontend}}{{.ContentFrontend}}{{.ContentFrontendTcp}}{{.ContentFrontendSNI}}

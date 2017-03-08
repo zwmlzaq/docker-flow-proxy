@@ -1,6 +1,5 @@
 global
     pidfile /var/run/haproxy.pid
-    log 127.0.0.1:1514 local0
     tune.ssl.default-dh-param 2048{{.ExtraGlobal}}
 
     #disable sslv3, prefer modern ciphers
@@ -17,8 +16,6 @@ defaults
     option  {{.ConnectionMode}}
     option  forwardfor
     option  redispatch
-    option  httplog
-    option  dontlognull
 
     errorfile 400 /errorfiles/400.http
     errorfile 403 /errorfiles/403.http
@@ -46,7 +43,4 @@ defaults
     stats uri /admin?stats
 {{.UserList}}
 frontend services{{.DefaultBinds}}
-    mode http
-    log global
-    log-format "%ci:%cp [%t] %ft %b/%s %Tq/%Tw/%Tc/%Tr/%Tt %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs {%[ssl_c_verify],%{+Q}[ssl_c_s_dn],%{+Q}[ssl_c_i_dn]} %{+Q}r"
-{{.ExtraFrontend}}{{.ContentFrontend}}{{.ContentFrontendTcp}}{{.ContentFrontendSNI}}
+    mode http{{.ExtraFrontend}}{{.ContentFrontend}}{{.ContentFrontendTcp}}{{.ContentFrontendSNI}}

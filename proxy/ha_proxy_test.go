@@ -77,8 +77,7 @@ defaults
 frontend services
     bind *:80
     bind *:443
-    mode http
-`
+    mode http`
 	s.ServicesContent = `
 
 config1 fe content
@@ -289,13 +288,27 @@ func (s HaProxyTestSuite) Test_CreateConfigFromTemplates_WritesCfgContentsIntoFi
 	s.Equal(expectedData, actualData)
 }
 
-func (s HaProxyTestSuite) Test_CreateConfigFromTemplates_AddsDebug() {
+func (s HaProxyTestSuite) Test_CreateConfigFromTemplates_AddsLogging_WhenDebug() {
 	debugOrig := os.Getenv("DEBUG")
 	defer func() { os.Setenv("DEBUG", debugOrig) }()
 	os.Setenv("DEBUG", "true")
 	var actualData string
-	tmpl := strings.Replace(s.TemplateContent, "tune.ssl.default-dh-param 2048", "tune.ssl.default-dh-param 2048\n    debug", -1)
+	tmpl := strings.Replace(s.TemplateContent, "tune.ssl.default-dh-param 2048", "tune.ssl.default-dh-param 2048\n    log 127.0.0.1:1514 local0", -1)
 	tmpl = strings.Replace(tmpl, "    option  dontlognull\n    option  dontlog-normal\n", "", -1)
+	tmpl = strings.Replace(
+		tmpl,
+		`frontend services
+    bind *:80
+    bind *:443
+    mode http`,
+		`frontend services
+    bind *:80
+    bind *:443
+    mode http
+    log global
+    log-format "%ft %b/%s %Tq/%Tw/%Tc/%Tr/%Tt %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs {%[ssl_c_verify],%{+Q}[ssl_c_s_dn],%{+Q}[ssl_c_i_dn]} %{+Q}r"`,
+		-1,
+	)
 	expectedData := fmt.Sprintf(
 		"%s%s",
 		tmpl,
@@ -337,7 +350,7 @@ func (s HaProxyTestSuite) Test_CreateConfigFromTemplates_AddsExtraFrontEnd() {
 	defer func() { os.Setenv("EXTRA_FRONTEND", extraFrontendOrig) }()
 	os.Setenv("EXTRA_FRONTEND", "this is an extra content")
 	var actualData string
-	tmpl := s.TemplateContent + "this is an extra content"
+	tmpl := s.TemplateContent + "\nthis is an extra content"
 	expectedData := fmt.Sprintf(
 		"%s%s",
 		tmpl,

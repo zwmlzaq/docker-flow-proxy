@@ -3,7 +3,7 @@ package proxy
 import (
 	"bytes"
 	"fmt"
-	"html/template"
+	"text/template"
 	"os"
 	"os/exec"
 	"sort"
@@ -169,7 +169,7 @@ func (m HaProxy) getConfigs() (string, error) {
 backend dummy-be
     server dummy 1.1.1.1:1111 check`)
 	}
-	tmpl, _ := template.New("contentTemplate").Parse(
+	tmpl, _ := template.New("").Parse(
 		strings.Join(contentArr, "\n\n"),
 	)
 	var content bytes.Buffer
@@ -190,6 +190,7 @@ func (m HaProxy) getConfigData() ConfigData {
 	d := ConfigData{
 		CertsString: strings.Join(certsString, " "),
 	}
+
 	d.ConnectionMode = GetSecretOrEnvVar("CONNECTION_MODE", "http-server-close")
 	d.TimeoutConnect = GetSecretOrEnvVar("TIMEOUT_CONNECT", "5")
 	d.TimeoutClient = GetSecretOrEnvVar("TIMEOUT_CLIENT", "20")
@@ -200,6 +201,11 @@ func (m HaProxy) getConfigData() ConfigData {
 	d.TimeoutHttpKeepAlive = GetSecretOrEnvVar("TIMEOUT_HTTP_KEEP_ALIVE", "15")
 	d.StatsUser = GetSecretOrEnvVar("STATS_USER", "admin")
 	d.StatsPass = GetSecretOrEnvVar("STATS_PASS", "admin")
+	d.ExtraFrontend = GetSecretOrEnvVar("EXTRA_FRONTEND", "")
+	if len(d.ExtraFrontend) > 0 {
+		d.ExtraFrontend = fmt.Sprintf("\n%s", d.ExtraFrontend)
+	}
+	extraGlobal := GetSecretOrEnvVar("EXTRA_GLOBAL", "")
 	usersString := GetSecretOrEnvVar("USERS", "")
 	encryptedString := GetSecretOrEnvVar("USERS_PASS_ENCRYPTED", "")
 	if len(usersString) > 0 {
@@ -220,7 +226,10 @@ func (m HaProxy) getConfigData() ConfigData {
 	}
 	if strings.EqualFold(GetSecretOrEnvVar("DEBUG", ""), "true") {
 		d.ExtraGlobal += `
-    debug`
+    log 127.0.0.1:1514 local0`
+		d.ExtraFrontend += `
+    log global
+    log-format "%ft %b/%s %Tq/%Tw/%Tc/%Tr/%Tt %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs {%[ssl_c_verify],%{+Q}[ssl_c_s_dn],%{+Q}[ssl_c_i_dn]} %{+Q}r"`
 	} else {
 		d.ExtraDefaults += `
     option  dontlognull
@@ -233,8 +242,6 @@ func (m HaProxy) getConfigData() ConfigData {
 		formattedPort := strings.Replace(bindPort, ":ssl", d.CertsString, -1)
 		d.DefaultBinds += fmt.Sprintf("\n    bind *:%s", formattedPort)
 	}
-	d.ExtraFrontend = GetSecretOrEnvVar("EXTRA_FRONTEND", "")
-	extraGlobal := GetSecretOrEnvVar("EXTRA_GLOBAL", "")
 	if len(extraGlobal) > 0 {
 		d.ExtraGlobal += fmt.Sprintf("\n    %s", extraGlobal)
 	}
