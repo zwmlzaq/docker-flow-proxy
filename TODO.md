@@ -8,3 +8,5 @@
 * Put `log global` to frontend
 * Put `log-format` to frontend
 * Put `log global` to backends
+* Remove logs from `ExtraGlobal`
+* Experiment with different log formats
