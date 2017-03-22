@@ -26,7 +26,9 @@ ENV CONNECTION_MODE="http-server-close" \
     CERTS=""
 
 EXPOSE 80
+EXPOSE 81
 EXPOSE 443
+EXPOSE 444
 EXPOSE 8080
 
 CMD ["docker-flow-proxy", "server"]
@@ -34,5 +36,5 @@ CMD ["docker-flow-proxy", "server"]
 COPY errorfiles /errorfiles
 COPY haproxy.cfg /cfg/haproxy.cfg
 COPY haproxy.tmpl /cfg/tmpl/haproxy.tmpl
-COPY docker-flow-proxy /usr/local/bin/docker-flow-proxy
+COPY ./docker-flow-proxy /usr/local/bin/docker-flow-proxy
 RUN chmod +x /usr/local/bin/docker-flow-proxy
