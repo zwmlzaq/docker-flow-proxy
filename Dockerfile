@@ -26,7 +26,9 @@ ENV CONNECTION_MODE="http-server-close" \
     CERTS=""
 
 EXPOSE 80
+EXPOSE 81
 EXPOSE 443
+EXPOSE 444
 EXPOSE 8080
 
 CMD ["docker-flow-proxy", "server"]
